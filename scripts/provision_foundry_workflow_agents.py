@@ -1,11 +1,25 @@
 #!/usr/bin/env python3
-from azure.ai.agents import AgentsClient
-from azure.identity import AzureCliCredential
+"""Provision (or update) the multi-expert-router agents in Azure AI Foundry.
 
-ENDPOINT = "https://proj-nw-resource.services.ai.azure.com/api/projects/proj-nw"
-MODEL_DEPLOYMENT = "chat-main"
+Requires:
+    pip install "azure-ai-projects>=2.0.0b1" --pre
+    pip install azure-identity
+"""
 
-AGENT_SPECS = {
+import os
+
+from azure.ai.projects import AIProjectClient
+from azure.ai.projects.models import PromptAgentDefinition
+from azure.core.exceptions import ResourceNotFoundError
+from azure.identity import DefaultAzureCredential
+
+ENDPOINT = os.environ.get(
+    "AZURE_AI_ENDPOINT",
+    "https://proj-nw-resource.services.ai.azure.com/api/projects/proj-nw",
+)
+MODEL_DEPLOYMENT = os.environ.get("AZURE_AI_MODEL", "chat-main")
+
+AGENT_SPECS: dict[str, str] = {
     "orchestrator": (
         "You are a router. Classify the user question and return ONLY a strict JSON "
         "object with boolean keys: neuro, benefits, geography.\n"
@@ -39,27 +53,30 @@ AGENT_SPECS = {
 
 
 def main() -> None:
-    client = AgentsClient(endpoint=ENDPOINT, credential=AzureCliCredential())
-    existing = {agent.name: agent for agent in client.list_agents()}
+    client = AIProjectClient(endpoint=ENDPOINT, credential=DefaultAzureCredential())
 
     for name, instructions in AGENT_SPECS.items():
-        if name in existing:
-            agent = client.update_agent(
-                agent_id=existing[name].id,
-                name=name,
-                model=MODEL_DEPLOYMENT,
-                instructions=instructions,
-                description=f"Configured for workflow multi-expert-router ({name})",
-            )
-            print(f"UPDATED\t{name}\t{agent.id}")
-        else:
-            agent = client.create_agent(
-                name=name,
-                model=MODEL_DEPLOYMENT,
-                instructions=instructions,
-                description=f"Configured for workflow multi-expert-router ({name})",
-            )
-            print(f"CREATED\t{name}\t{agent.id}")
+        definition = PromptAgentDefinition(
+            model=MODEL_DEPLOYMENT,
+            instructions=instructions,
+        )
+
+        # Check whether the agent already exists by name.
+        exists = False
+        try:
+            client.agents.get(agent_name=name)
+            exists = True
+        except ResourceNotFoundError:
+            pass
+
+        version = client.agents.create_version(
+            agent_name=name,
+            definition=definition,
+            description=f"Configured for workflow multi-expert-router ({name})",
+        )
+
+        action = "UPDATED" if exists else "CREATED"
+        print(f"{action}\t{name}\tv{version.version}")
 
 
 if __name__ == "__main__":

@@ -21,23 +21,29 @@ At runtime, the orchestrator returns route booleans and the workflow conditional
 
 ## Prerequisites
 
-- Python 3.7+
-- Azure CLI authenticated to the correct tenant/subscription
+- Python 3.10+
+- Azure CLI authenticated to the correct tenant/subscription (`az login`)
 - Access to an Azure AI Foundry project endpoint
-- Python packages:
-  - `azure-ai-agents`
+- Python packages (see `requirements.txt`):
+  - `azure-ai-projects>=2.0.0b1` (new Foundry Agent Service SDK)
   - `azure-identity`
 
 ## Provision Agents
 
-1. Update endpoint/model values in `scripts/provision_foundry_workflow_agents.py` if needed:
-   - `ENDPOINT`
-   - `MODEL_DEPLOYMENT`
-2. Install dependencies:
+1. Install dependencies:
 
    ```bash
-   pip install azure-ai-agents azure-identity
+   pip install -r requirements.txt --pre
    ```
+
+2. (Optional) Override the default endpoint/model via environment variables:
+
+   ```bash
+   export AZURE_AI_ENDPOINT="https://<resource>.services.ai.azure.com/api/projects/<project>"
+   export AZURE_AI_MODEL="chat-main"
+   ```
+
+   If unset, the script falls back to the values hard-coded for `proj-nw`.
 
 3. Run provisioning script:
 
@@ -45,7 +51,15 @@ At runtime, the orchestrator returns route booleans and the workflow conditional
    python scripts/provision_foundry_workflow_agents.py
    ```
 
+   The script uses `DefaultAzureCredential`, which picks up credentials from
+   `az login`, managed identity, environment variables, etc.
+
 ## Notes
 
+- This project targets **new** Azure AI Foundry agents (not classic). The
+  `azure-ai-projects` v2 SDK is required per the
+  [migration guide](https://learn.microsoft.com/en-us/azure/ai-foundry/agents/how-to/migrate?view=foundry).
+- Each agent is defined as a `PromptAgentDefinition` and deployed via
+  `client.agents.create_version()`, which creates a new version if the agent
+  already exists.
 - Keep environment-specific values out of source control where possible.
-- Consider moving endpoint/model configuration to environment variables in a follow-up change.
