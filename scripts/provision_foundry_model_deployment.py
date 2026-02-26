@@ -7,7 +7,7 @@ Mirrors the pattern in provision_foundry_workflow_agents.py so every
 infrastructure component is scripted and repeatable.
 
 Requires:
-    pip install azure-identity azure-mgmt-cognitiveservices azure-mgmt-resource
+    pip install azure-identity azure-mgmt-cognitiveservices azure-mgmt-resource azure-mgmt-subscription
 """
 
 from azure.identity import AzureCliCredential
@@ -19,7 +19,7 @@ from azure.mgmt.cognitiveservices.models import (
     Sku,
 )
 from azure.mgmt.resource import ResourceManagementClient
-from azure.mgmt.resource.subscriptions import SubscriptionClient
+from azure.mgmt.subscription import SubscriptionClient
 
 # ── Azure resource identifiers ───────────────────────────────────────────────
 # The ACCOUNT_NAME is derived from the project endpoint in
