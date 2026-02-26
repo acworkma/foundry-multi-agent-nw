@@ -1,0 +1,136 @@
+ 
+kind: workflow
+trigger:
+  kind: OnConversationStart
+  id: trigger_wf
+  actions:
+    - kind: SetVariable
+      id: set_user_input
+      variable: Local.UserQuestion
+      value: =System.LastMessage.Text
+    - kind: SetVariable
+      id: init_neuro_answer
+      variable: Local.NeuroAnswer
+      value: ""
+    - kind: SetVariable
+      id: init_benefits_answer
+      variable: Local.BenefitsAnswer
+      value: ""
+    - kind: SetVariable
+      id: init_geography_answer
+      variable: Local.GeographyAnswer
+      value: ""
+    - kind: InvokeAzureAgent
+      id: orchestrator
+      agent:
+        name: orchestrator
+      conversationId: =System.ConversationId
+      input:
+        messages: =Local.UserQuestion
+        externalLoop:
+          when: =
+      output:
+        autoSend: true
+        responseObject: Local.RoutingJSON
+    - kind: ParseValue
+      variable: Local.Route
+      valueType:
+        kind: Table
+      value: =Local.RoutingJSON
+      id: parse
+    - kind: ConditionGroup
+      conditions:
+        - condition: =Local.Route.neuro = true
+          actions:
+            - kind: InvokeAzureAgent
+              id: neuro-expert-agent
+              agent:
+                name: neuro-expert
+              conversationId: =System.ConversationId
+              input:
+                messages: =Local.UserQuestion
+                externalLoop:
+                  when: =
+              output:
+                autoSend: true
+                messages: Local.NeuroAnswer
+            - kind: SetVariable
+              id: node-1772041835747
+              variable: Local.NeuroAnswer
+              value: =Last(Local.NeuroAnswer).Text
+          id: if-neuro
+      id: node-1772031851000
+      elseActions: []
+    - kind: ConditionGroup
+      conditions:
+        - condition: =Local.Route.benefits = true
+          actions:
+            - kind: InvokeAzureAgent
+              id: benefits-expert
+              agent:
+                name: benefits-expert
+              conversationId: =System.ConversationId
+              input:
+                messages: =Local.UserQuestion
+                externalLoop:
+                  when: =
+              output:
+                autoSend: true
+                messages: Local.BenefitsAnswer
+            - kind: SetVariable
+              id: node-1772042039579
+              variable: Local.BenefitsAnswer
+              value: =Last(Local.BenefitsAnswer).Text
+          id: if-benefits
+      id: node-1772031999472
+      elseActions: []
+    - kind: ConditionGroup
+      conditions:
+        - condition: =Local.Route.geography = true
+          actions:
+            - kind: InvokeAzureAgent
+              id: geography-expert
+              agent:
+                name: geography-expert
+              conversationId: =System.ConversationId
+              input:
+                messages: =Local.UserQuestion
+                externalLoop:
+                  when: =
+              output:
+                autoSend: true
+                messages: Local.GeographyAnswer
+            - kind: SetVariable
+              id: node-1772042130630
+              variable: Local.GeographyAnswer
+              value: =Last(Local.GeographyAnswer).Text
+          id: if-node-1772032224415-0
+      id: node-1772032224415
+      elseActions: []
+    - kind: SetVariable
+      id: node-1772042159521
+      variable: Local.SynthesizerIput
+      value: |-
+        =Concatenate(
+        "Original Question: ",             Local.UserQuestion,
+        "\n\nNeuroscience Expert: ", Local.NeuroAnswer
+        ,"\n\n Benefits Expert :", Local.BenefitsAnswer
+        ,"\n\n Geography Expert: ", Local.GeographyAnswer
+        )
+    - kind: InvokeAzureAgent
+      id: node-1772042417770
+      agent:
+        name: synthesizer
+      conversationId: =System.ConversationId
+      input:
+        messages: =Local.SynthesizerIput
+      output:
+        autoSend: true
+        messages: Local.SynthesizerAnswer
+    - kind: EndConversation
+      id: node-1772032508630
+id: ""
+name: multi-expert-router
+description: ""
+ 
+ 
