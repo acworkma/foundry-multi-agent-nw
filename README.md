@@ -23,7 +23,7 @@ The `--pre` flag is required for the `azure-ai-projects` beta package.
 python scripts/provision_foundry_project.py
 ```
 
-Creates the resource group `rg-proj-nw`, AI Services account `proj-nw-resource`, and Foundry project `proj-nw` in `eastus2`.
+Creates a resource group, AI Services account, and Foundry project in `eastus2`. On first run a random 4-character suffix is generated and saved to `scripts/.suffix` to ensure globally unique resource names (e.g., `rg-proj-nw-a3x9`, `proj-nw-resource-a3x9`). All subsequent scripts reuse the same suffix.
 
 ### 3. Deploy the model
 
@@ -41,12 +41,14 @@ python scripts/provision_foundry_workflow_agents.py
 
 Creates or updates five agents in the project: `orchestrator`, `neuro-expert`, `benefits-expert`, `geography-expert`, and `synthesizer`.
 
-To target a different project or model deployment, set these environment variables before running:
+To target a different project or model deployment, set environment variables before running:
 
 ```bash
 export AZURE_AI_ENDPOINT="https://<resource>.services.ai.azure.com/api/projects/<project>"
 export AZURE_AI_MODEL="<deployment-name>"
 ```
+
+Or edit the values in `scripts/config.py` directly.
 
 ## Workflow
 
@@ -63,6 +65,7 @@ export AZURE_AI_MODEL="<deployment-name>"
 workflow.yaml                                  # Workflow definition
 requirements.txt                               # Python dependencies
 scripts/
+  config.py                                    # Shared names, suffix, and settings
   provision_foundry_project.py                 # Resource group, AI Services account, project
   provision_foundry_model_deployment.py        # gpt-4o model deployment
   provision_foundry_workflow_agents.py         # Five workflow agents

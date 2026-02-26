@@ -21,19 +21,15 @@ from azure.mgmt.cognitiveservices.models import (
 from azure.mgmt.resource import ResourceManagementClient
 from azure.mgmt.subscription import SubscriptionClient
 
-# ── Azure resource identifiers ───────────────────────────────────────────────
-# The ACCOUNT_NAME is derived from the project endpoint in
-# provision_foundry_workflow_agents.py:
-#   https://proj-nw-resource.services.ai.azure.com/api/projects/proj-nw
-ACCOUNT_NAME = "proj-nw-resource"  # AI Services account name
-
-# ── Model deployment configuration ───────────────────────────────────────────
-DEPLOYMENT_NAME  = "chat-main"
-MODEL_FORMAT     = "OpenAI"
-MODEL_NAME       = "gpt-4o"                     # catalog model name
-MODEL_VERSION    = "2024-11-20"                  # model version to deploy
-SKU_NAME         = "GlobalStandard"              # SKU tier (GlobalStandard, Standard, etc.)
-SKU_CAPACITY     = 10                            # thousands of tokens-per-minute (TPM)
+from config import (
+    ACCOUNT_NAME,
+    DEPLOYMENT_NAME,
+    MODEL_FORMAT,
+    MODEL_NAME,
+    MODEL_VERSION,
+    SKU_CAPACITY,
+    SKU_NAME,
+)
 
 
 def _get_subscription_id(credential: AzureCliCredential) -> str:

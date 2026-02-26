@@ -6,18 +6,12 @@ Requires:
     pip install azure-identity
 """
 
-import os
-
 from azure.ai.projects import AIProjectClient
 from azure.ai.projects.models import PromptAgentDefinition
 from azure.core.exceptions import ResourceNotFoundError
 from azure.identity import DefaultAzureCredential
 
-ENDPOINT = os.environ.get(
-    "AZURE_AI_ENDPOINT",
-    "https://proj-nw-resource.services.ai.azure.com/api/projects/proj-nw",
-)
-MODEL_DEPLOYMENT = os.environ.get("AZURE_AI_MODEL", "chat-main")
+from config import ENDPOINT, MODEL_DEPLOYMENT
 
 AGENT_SPECS: dict[str, str] = {
     "orchestrator": (

@@ -33,3 +33,6 @@ coverage.xml
 # OS artifacts
 .DS_Store
 Thumbs.db
+
+# Generated resource suffix (unique per environment)
+scripts/.suffix

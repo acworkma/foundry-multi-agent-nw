@@ -26,16 +26,14 @@ from azure.mgmt.cognitiveservices.models import (
 from azure.mgmt.resource import ResourceManagementClient
 from azure.mgmt.subscription import SubscriptionClient
 
-# ── Configuration ─────────────────────────────────────────────────────────────
-# These names must match the values used by the downstream provisioning scripts.
-RESOURCE_GROUP_NAME = "rg-proj-nw"
-LOCATION            = "eastus2"
-
-ACCOUNT_NAME        = "proj-nw-resource"     # AI Services account
-ACCOUNT_SKU         = "S0"
-ACCOUNT_KIND        = "AIServices"
-
-PROJECT_NAME        = "proj-nw"              # Foundry project (child of account)
+from config import (
+    ACCOUNT_KIND,
+    ACCOUNT_NAME,
+    ACCOUNT_SKU,
+    LOCATION,
+    PROJECT_NAME,
+    RESOURCE_GROUP_NAME,
+)
 
 
 # ── Helpers ───────────────────────────────────────────────────────────────────
