@@ -1,65 +1,69 @@
 # Foundry Multi-Agent NW
 
-Multi-agent workflow project for Azure AI Foundry using a router + specialist agents pattern.
-
-## Project Structure
-
-- `workflow.yaml`: Workflow definition (`multi-expert-router`) that routes a user question to one or more specialist agents and synthesizes the final answer.
-- `scripts/provision_foundry_workflow_agents.py`: Python provisioning script to create or update required Azure AI Foundry agents.
-
-## Workflow Overview
-
-The workflow includes these agents:
-
-- `orchestrator`
-- `neuro-expert`
-- `benefits-expert`
-- `geography-expert`
-- `synthesizer`
-
-At runtime, the orchestrator returns route booleans and the workflow conditionally invokes experts, then combines outputs for the synthesizer.
+Provisions a multi-agent workflow on Azure AI Foundry using a router → specialist experts → synthesizer pattern.
 
 ## Prerequisites
 
 - Python 3.10+
-- Azure CLI authenticated to the correct tenant/subscription (`az login`)
-- Access to an Azure AI Foundry project endpoint
-- Python packages (see `requirements.txt`):
-  - `azure-ai-projects>=2.0.0b1` (new Foundry Agent Service SDK)
-  - `azure-identity`
+- Azure CLI authenticated to your tenant/subscription (`az login`)
 
-## Provision Agents
+## Quick Start
 
-1. Install dependencies:
+### 1. Install dependencies
 
-   ```bash
-   pip install -r requirements.txt --pre
-   ```
+```bash
+pip install -r requirements.txt --pre
+```
 
-2. (Optional) Override the default endpoint/model via environment variables:
+The `--pre` flag is required for the `azure-ai-projects` beta package.
 
-   ```bash
-   export AZURE_AI_ENDPOINT="https://<resource>.services.ai.azure.com/api/projects/<project>"
-   export AZURE_AI_MODEL="chat-main"
-   ```
+### 2. Provision the Foundry project
 
-   If unset, the script falls back to the values hard-coded for `proj-nw`.
+```bash
+python scripts/provision_foundry_project.py
+```
 
-3. Run provisioning script:
+Creates the resource group `rg-proj-nw`, AI Services account `proj-nw-resource`, and Foundry project `proj-nw` in `eastus2`.
 
-   ```bash
-   python scripts/provision_foundry_workflow_agents.py
-   ```
+### 3. Deploy the model
 
-   The script uses `DefaultAzureCredential`, which picks up credentials from
-   `az login`, managed identity, environment variables, etc.
+```bash
+python scripts/provision_foundry_model_deployment.py
+```
 
-## Notes
+Deploys `gpt-4o` as a `GlobalStandard` deployment named `chat-main` on the AI Services account.
 
-- This project targets **new** Azure AI Foundry agents (not classic). The
-  `azure-ai-projects` v2 SDK is required per the
-  [migration guide](https://learn.microsoft.com/en-us/azure/ai-foundry/agents/how-to/migrate?view=foundry).
-- Each agent is defined as a `PromptAgentDefinition` and deployed via
-  `client.agents.create_version()`, which creates a new version if the agent
-  already exists.
-- Keep environment-specific values out of source control where possible.
+### 4. Create the agents
+
+```bash
+python scripts/provision_foundry_workflow_agents.py
+```
+
+Creates or updates five agents in the project: `orchestrator`, `neuro-expert`, `benefits-expert`, `geography-expert`, and `synthesizer`.
+
+To target a different project or model deployment, set these environment variables before running:
+
+```bash
+export AZURE_AI_ENDPOINT="https://<resource>.services.ai.azure.com/api/projects/<project>"
+export AZURE_AI_MODEL="<deployment-name>"
+```
+
+## Workflow
+
+`workflow.yaml` defines the `multi-expert-router` workflow. To import it:
+
+1. Open your Foundry project in the portal.
+2. Go to **Build → Workflows → Create** (Blank workflow).
+3. Switch to **YAML view** in the workflow editor.
+4. Paste your YAML and **Save**.
+
+## Project Structure
+
+```
+workflow.yaml                                  # Workflow definition
+requirements.txt                               # Python dependencies
+scripts/
+  provision_foundry_project.py                 # Resource group, AI Services account, project
+  provision_foundry_model_deployment.py        # gpt-4o model deployment
+  provision_foundry_workflow_agents.py         # Five workflow agents
+```
